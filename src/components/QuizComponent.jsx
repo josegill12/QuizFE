@@ -23,19 +23,42 @@ const QuizComponent = () => {
                 setLoading(false);
             });
     }, []);
+    // logic to calculate the score
+    const calculateScore = () => {
+        // TODO: 
+        let score = 0;
+        quizzes.forEach(quiz => {
+            quiz.questions.forEach(question => {
+                if (answers[question.id] === question.correct_option) {
+                    score += 1;
+                }
+            });
+        });
+        return score;
+    }
 
     // Function to handle the selection of an option
-    const handleSelectOption = (questionId, optionId) => {
+    const handleSelectOption = (answerId, optionId) => {
         setAnswers(prevAnswers => ({
             ...prevAnswers,
-            [questionId]: optionId
+            [answerId]: optionId
         }));
     };
 
     // Function to handle submission of answers
     const handleSubmit = () => {
-        // Here you can send the answers back to the Django backend for evaluation
-        // or evaluate them on the client-side depending on your requirement
+        const score = calculateScore();
+        const token = localStorage.getItem('authToken');
+
+        axios.post('http://localhost:8000/api/submit-answer/', { score }, {
+            headers: { 'Authorization': `Token ${token}` }
+        })
+            .then(response => {
+                console.log('Answer result saved!', response.data);
+            })
+            .catch(error => {
+                console.error('Error saving quiz result:', error);
+            });
         console.log('Submitted Answers:', answers);
     };
 
@@ -54,9 +77,12 @@ const QuizComponent = () => {
                 <div key={quiz.id}>
                     <h2>{quiz.title}</h2>
                     {quiz.questions.map(question => (
-                        <div className="question-container" key={question.id}> {/* Apply 'question-container' class */}
-                            <QuestionComponent question={question} onSelectOption={handleSelectOption} />
-                        </div>
+                            <QuestionComponent 
+                                key={question.id}
+                                question={question} 
+                                onSelectOption={handleSelectOption} 
+                            />
+                        
                     ))}
                 </div>
             ))}

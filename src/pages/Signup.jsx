@@ -43,7 +43,7 @@ const SignUpPage = () => {
     try {
       const response = await axios.post(endpoint, data);
       console.log('Signup Success:', response.data);
-      navigate('/profile'); // Redirect to login page after successful signup
+      navigate('/login'); // Redirect to login page after successful signup
     } catch (error) {
       if (error.response) {
         // Extract error message from server response
